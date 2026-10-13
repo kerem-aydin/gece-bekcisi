@@ -1,0 +1,6 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Body fade</title>
+<link rel="icon" href="data:,"><style>body{margin:0;font:16px system-ui;opacity:0;transition:opacity .4s}body.ready{opacity:1}section{min-height:120vh;padding:24px}footer{padding:24px;background:#eee}</style></head>
+<!-- The page fades in its body when a script says it is ready. That never happens, so the whole page stays transparent. -->
+<body><main><section><h1>Welcome</h1></section><section><h2>Services</h2></section></main>
+<footer><p>Contact</p></footer>
+<script>window.addEventListener("load",()=>{if(window.analyticsReady)document.body.classList.add("ready")})</script></body></html>

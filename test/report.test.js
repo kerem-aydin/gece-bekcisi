@@ -44,3 +44,7 @@ test("report: one line when clean, one line per failing check otherwise", () => 
   assert.equal(bad.ok, false);
   assert.match(bad.text, /- phone \/: page scrolls sideways/);
 });
+
+test("a footer with text that takes no space is reported", () => {
+  assert.deepEqual(findProblems({ ...clean, collapsedFooter: true }), ["footer has text but takes no space"]);
+});

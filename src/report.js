@@ -16,6 +16,7 @@ export function findProblems(m, t = THRESHOLDS) {
   else if (m.firstPaintMs > t.firstPaintMs) p.push(`slow: first paint ${(m.firstPaintMs / 1000).toFixed(1)} s`);
   if (m.loadMs > t.loadMs) p.push(`load took ${(m.loadMs / 1000).toFixed(1)} s`);
   if (m.invisibleFooterParts > 0) p.push(`${m.invisibleFooterParts} footer item(s) never became visible`);
+  if (m.collapsedFooter) p.push("footer has text but takes no space");
   if (m.hiddenHeadings?.length) p.push(`section never appeared after scrolling: ${m.hiddenHeadings.slice(0, 3).join(" · ")}`);
   if (m.overflowPx > t.overflowPx) p.push(`page scrolls sideways (${m.overflowPx} px)`);
   if (m.brokenImages?.length) p.push(`broken image: ${m.brokenImages.slice(0, 2).join(", ")}`);
@@ -24,7 +25,8 @@ export function findProblems(m, t = THRESHOLDS) {
   return p;
 }
 
-/** A one-off network hiccup should not wake anyone up: only failures that repeat count. */
+/** A one-off network hiccup should not wake anyone up: a failing check is run
+    once more and only that second result is reported. */
 export function mergeRetry(first, retry) {
   return first.map((r) => retry.find((x) => x.path === r.path && x.device === r.device) ?? r);
 }

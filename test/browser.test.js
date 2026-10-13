@@ -18,7 +18,15 @@ test("real browser catches what a green test suite misses", { skip: !chrome && "
     catch { res.writeHead(404).end(); }
   }).listen(0);
   const base = `http://127.0.0.1:${server.address().port}`;
-  const browser = await puppeteer.launch({ executablePath: chrome, headless: true, args: ["--no-sandbox"] });
+  /* If the browser cannot start, the server must still close, or the test
+     process never exits. */
+  let browser;
+  try {
+    browser = await puppeteer.launch({ executablePath: chrome, headless: true, args: ["--no-sandbox"] });
+  } catch (e) {
+    server.close();
+    throw e;
+  }
   const run = (page, device, opts) => inspect(browser, `${base}/${page}`, device, { settleMs: 600, ...opts });
   try {
     await t.test("clean page is clean on phone and desktop", async () => {
@@ -34,6 +42,17 @@ test("real browser catches what a green test suite misses", { skip: !chrome && "
     });
     await t.test("broken image", async () => {
       assert.match((await run("broken-image.html", "desktop")).problems.join(), /broken image/);
+    });
+    await t.test("a page that fades in its body and never finishes", async () => {
+      assert.match((await run("body-never-fades-in.html", "phone")).problems.join(), /never appeared/);
+    });
+    await t.test("a hidden section on a page without <main>", async () => {
+      const problems = (await run("no-main.html", "desktop")).problems.join();
+      assert.match(problems, /never appeared after scrolling: Pricing/);
+      assert.doesNotMatch(problems, /Menu/, "navigation is left alone");
+    });
+    await t.test("a footer that collapses to nothing", async () => {
+      assert.match((await run("footer-collapsed.html", "phone")).problems.join(), /takes no space/);
     });
     await t.test("self-test: the known bug, put back on purpose, is caught", async () => {
       assert.match((await run("clean.html", "phone", { sabotage: true })).problems.join(), /footer item/);

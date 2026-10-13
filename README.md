@@ -7,8 +7,8 @@
 Every night a real browser opens your site as a slow phone and as a desktop,
 scrolls every page to the bottom like a person would, and reports what broke
 **without an error**: a section that never appears, a page that scrolls
-sideways, a broken image, a page that got slow. Before it watches, it puts a
-known bug back on purpose, and it fails if it cannot catch it.
+sideways, a broken image, a page that got slow. The nightly job first runs it
+with a known bug put back on purpose, and fails if the watch cannot catch it.
 
 <img src="docs/run.png" alt="A real run: the clean page passes, an invisible footer and a sideways-scrolling phone page are caught" width="760">
 
@@ -26,21 +26,30 @@ This tool does, every night, and it has to prove each time that it still can.
 
 | Problem | How |
 |---|---|
-| Section or footer that never becomes visible | After scrolling to the bottom, text that is still `opacity: 0` or `visibility: hidden` |
+| Section or footer that never becomes visible | After scrolling to the bottom, text that takes up space but is still `opacity: 0` or `visibility: hidden`, checked up to `<html>` (a body that never fades in counts). Headings in `<main>`, or in the whole page if there is no `<main>`; navigation and dialogs are left alone |
+| Footer that collapses | A footer with text and zero height |
 | Sideways scroll on phones | Page width compared to the **device** width (a mobile browser zooms out to fit wide content, so `innerWidth` hides the bug) |
 | Broken images | Loaded images with zero natural width |
 | Page did not open, painted nothing, got slow | HTTP status, first contentful paint on a 4× throttled CPU and a 4G connection |
 | JavaScript and server errors | Page errors, console errors, 5xx responses; analytics and favicon noise filtered out |
 
-One-off network hiccups do not wake anyone up: failing checks are retried once
-and only reported if they fail again.
+One-off network hiccups do not wake anyone up: a failing check is run once
+more, and only that second result is reported.
+
+**What it does not see.** Elements hidden with `display: none` are not
+reported, because menus and tabs hide that way on purpose. Text that is visible
+but covered by another element, or moved off screen, is not detected. Only
+footer items and section headings are checked for visibility, not every line
+of text.
 
 ## The self-test
 
 A watch that silently stops watching is worse than no watch. With
-`--sabotage`, the original bug (an invisible footer) is injected into the page
-before it loads. The nightly job runs this first and **fails if the watch does
-not report it**. Only then does the real check run.
+`--sabotage`, the symptom of the original bug is put back into the page: the
+footer's contents are made transparent, which is what a phone user saw. The
+nightly job in `examples/` runs this first and **fails if the watch does not
+report it**. Only then does the real check run. The cause itself, a scroll
+trigger below the end of the page, is reproduced in the test suite.
 
 The test suite does the same with small pages that reproduce real bugs, in a
 real browser, on every push:
@@ -50,6 +59,9 @@ real browser, on every push:
 ✔ footer whose scroll trigger sits below the page never appears
 ✔ sideways scroll on a phone only
 ✔ broken image
+✔ a page that fades in its body and never finishes
+✔ a hidden section on a page without <main>
+✔ a footer that collapses to nothing
 ✔ self-test: the known bug, put back on purpose, is caught
 ```
 
