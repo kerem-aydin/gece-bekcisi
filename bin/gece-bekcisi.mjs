@@ -15,6 +15,7 @@ const flags = new Set(args.filter((a) => a.startsWith("--")));
 const [site, ...paths] = args.filter((a) => !a.startsWith("--"));
 if (!site) { console.error("usage: gece-bekcisi <site> [path ...] [--sabotage] [--dry]"); process.exit(2); }
 const pages = paths.length ? paths : ["/"];
+const width = Math.max(...pages.map((p) => p.length)) + 2;
 
 const chrome = process.env.CHROME_PATH ?? (process.platform === "win32"
   ? "C:/Program Files/Google/Chrome/Application/chrome.exe"
@@ -24,7 +25,7 @@ async function round(browser, list) {
   const out = [];
   for (const [path, device] of list) {
     const r = { path, ...(await inspect(browser, new URL(path, site).href, device, { sabotage: flags.has("--sabotage") })) };
-    console.log(`${device.padEnd(8)} ${path.padEnd(12)} first paint ${String(r.firstPaintMs).padStart(5)} ms  ${r.problems.length ? "PROBLEM: " + r.problems.join(" | ") : "clean"}`);
+    console.log(`${device.padEnd(8)} ${path.padEnd(width)} first paint ${String(r.firstPaintMs).padStart(5)} ms  ${r.problems.length ? "PROBLEM: " + r.problems.join(" | ") : "clean"}`);
     out.push(r);
   }
   return out;

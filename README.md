@@ -10,6 +10,8 @@ scrolls every page to the bottom like a person would, and reports what broke
 sideways, a broken image, a page that got slow. Before it watches, it puts a
 known bug back on purpose, and it fails if it cannot catch it.
 
+<img src="docs/run.png" alt="A real run: the clean page passes, an invisible footer and a sideways-scrolling phone page are caught" width="760">
+
 ## Why it exists
 
 The footer of my own site was blank on phones. No error, no failing test, a
