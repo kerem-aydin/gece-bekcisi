@@ -1,0 +1,10 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Footer bug</title>
+<link rel="icon" href="data:,"><style>body{margin:0;font:16px system-ui}section{min-height:120vh;padding:24px}
+footer{position:relative;overflow:hidden;padding:24px;background:#eee}
+.reveal{opacity:0;transition:opacity .3s}.reveal.in{opacity:1}
+/* The real bug: the trigger sits below the end of the page, so it never scrolls into view. */
+.trigger{position:absolute;top:calc(100% + 400px);height:1px;width:1px}</style></head>
+<body><main><section><h1>Looks fine on a laptop</h1></section></main>
+<footer><div class="reveal"><p>Contact</p><a href="#">Privacy</a></div><span class="trigger"></span></footer>
+<script>new IntersectionObserver(([e])=>{if(e.isIntersecting)document.querySelector(".reveal").classList.add("in")}).observe(document.querySelector(".trigger"))</script>
+</body></html>

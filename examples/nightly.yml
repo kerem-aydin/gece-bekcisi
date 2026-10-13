@@ -1,0 +1,34 @@
+# Copy to .github/workflows/night-watch.yml in your own repository.
+# Secrets: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID (optional; without them the report goes to the log).
+name: night-watch
+on:
+  schedule:
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: kerem-aydin/gece-bekcisi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      # Runs on your own home page: the sabotage hides its footer, so the page needs one.
+      - name: Self-test (the known bug must be caught)
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+        run: |
+          if node bin/gece-bekcisi.mjs https://your-site.com / --sabotage --dry > self-test.log 2>&1; then
+            cat self-test.log; echo "The watch did not catch a bug put back on purpose: the watch is broken."; exit 1
+          fi
+          grep -q "footer item" self-test.log || { cat self-test.log; exit 1; }
+      - name: Watch
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: node bin/gece-bekcisi.mjs https://your-site.com / /pricing /contact
